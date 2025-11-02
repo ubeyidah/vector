@@ -1,0 +1,12 @@
+# .gitignore
+
+# Environment
+.venv/
+.env
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Your memory file (if you add it back)
+*.json
