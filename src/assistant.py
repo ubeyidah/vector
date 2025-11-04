@@ -1,8 +1,10 @@
 import os
 import sys
+import json
 from dotenv import load_dotenv
 from google import genai
 from google.genai import types
+from src.config import MEMORY_FILE
 
 
 class ChatAssistant:
@@ -39,9 +41,12 @@ class ChatAssistant:
 
     def _create_chat_session(self):
         """creates a new chat session with the system prompt"""
+        history = self._load_history()
         gen_config = types.GenerateContentConfig(system_instruction=self.system_prompt)
         print(f"Initializing chat with {self.model_name}...")
-        return self.client.chats.create(model=self.model_name, config=gen_config)
+        return self.client.chats.create(
+            model=self.model_name, config=gen_config, history=history
+        )
 
     def send_message_stream(self, prompt: str):
         """sends a message and yields the response chunks."""
@@ -51,3 +56,50 @@ class ChatAssistant:
                 yield chunk.text
         except Exception as e:
             print(f"\n[Stream Error: {e}]")
+
+    def _load_history(self):
+        """Loads chat history from the JSON memory file."""
+        if not os.path.exists(MEMORY_FILE):
+            return []
+
+        try:
+            with open(MEMORY_FILE, "r") as f:
+                serializable_history = json.load(f)
+
+            print(f"[Memory loaded from {MEMORY_FILE}]")
+
+            # Reconstruct 'types.Content' objects (simplified for text-only)
+            loaded_history = []
+            for item in serializable_history:
+                parts = [
+                    types.Part(text=part_data["text"]) for part_data in item["parts"]
+                ]
+                loaded_history.append(types.Content(role=item["role"], parts=parts))
+
+            return loaded_history
+
+        except Exception as e:
+            print(f"Error loading memory: {e}. Starting fresh.")
+            return []
+
+    def save_history(self):
+        """Saves the current chat history to the JSON memory file."""
+        try:
+            serializable_history = []
+            for content in self.chat_session.history():
+                parts_list = [
+                    {"text": part.text} for part in content.parts if part.text
+                ]
+
+                if parts_list:
+                    serializable_history.append(
+                        {"role": content.role, "parts": parts_list}
+                    )
+
+            with open(MEMORY_FILE, "w") as f:
+                json.dump(serializable_history, f, indent=4)
+
+            print(f"\n[Memory saved to {MEMORY_FILE}]")
+
+        except Exception as e:
+            print(f"\nError saving memory: {e}")

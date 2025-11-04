@@ -20,17 +20,29 @@ def run_terminal_chat():
     print(f"{ASSISTANT_NAME} is online. Type 'exit' or 'quit' to end.")
 
     while True:
-        try:
-            user_prompt = input(f"{USER_NAME}: ")
-            if user_prompt.lower() in EXIT_WORD_LIST:
-                print(f"Goodbye from {ASSISTANT_NAME}!")
-                break
-            print(f"{ASSISTANT_NAME}: ", end="", flush=True)
-            for chunk in assistant.send_message_stream(user_prompt):
-                print(chunk, end="", flush=True)
-            print()
-        except Exception as e:
-            print(f"\nAn error occurred: {e}")
+        try:  # KeyboardInterrupt
+            try:  # other errors
+                user_prompt = input(f"{USER_NAME}: ")
+
+                if user_prompt.lower() in EXIT_WORD_LIST:
+                    assistant.save_history()
+                    print(f"Goodbye from {ASSISTANT_NAME}!")
+                    break
+
+                print(f"{ASSISTANT_NAME}: ", end="", flush=True)
+
+                for chunk in assistant.send_message_stream(user_prompt):
+                    print(chunk, end="", flush=True)
+
+                print()
+
+            except Exception as e:
+                print(f"\nAn error occurred: {e}")
+
+        except KeyboardInterrupt:
+            assistant.save_history()
+            print(f"\n[Interrupted] Goodbye from {ASSISTANT_NAME}!")
+            break
 
 
 if __name__ == "__main__":
