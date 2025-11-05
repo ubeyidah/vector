@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.2.0] - 2025-11-05
+
+### Added
+
+- `feat(memory)`: Add persistent JSON memory to save and load chat history.
+
+### Fixed
+
+- `fix(memory)`: Use the correct `get_history()` method to save chat session.
+
 ## [v0.1.0] - 2025-11-02
 
 ### Added
