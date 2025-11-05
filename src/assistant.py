@@ -86,7 +86,7 @@ class ChatAssistant:
         """Saves the current chat history to the JSON memory file."""
         try:
             serializable_history = []
-            for content in self.chat_session.history():
+            for content in self.chat_session.get_history():
                 parts_list = [
                     {"text": part.text} for part in content.parts if part.text
                 ]
