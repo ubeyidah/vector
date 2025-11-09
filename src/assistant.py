@@ -5,6 +5,7 @@ from dotenv import load_dotenv
 from google import genai
 from google.genai import types
 from src.config import MEMORY_FILE
+from src.tools import all_tools
 
 
 class ChatAssistant:
@@ -42,7 +43,9 @@ class ChatAssistant:
     def _create_chat_session(self):
         """creates a new chat session with the system prompt"""
         history = self._load_history()
-        gen_config = types.GenerateContentConfig(system_instruction=self.system_prompt)
+        gen_config = types.GenerateContentConfig(
+            system_instruction=self.system_prompt, tools=all_tools
+        )
         print(f"Initializing chat with {self.model_name}...")
         return self.client.chats.create(
             model=self.model_name, config=gen_config, history=history
